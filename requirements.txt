@@ -1,0 +1,10 @@
+PyQt6>=6.6
+# **下限钉 5.0** —— CVE-2026-44405（GHSA-r374-rxx8-8654，rsakey 允许 SHA-1）
+# 影响 "through 4.0.0"，5.0.0 已修。写 `>=3.4` 的话，谁在老 venv 里
+# `pip install -U` 之前装的是 4.x，就带着这个洞。
+# 上限钉 <6：paramiko 大版本会改默认算法偏好与 API（我们已经在用
+# `disabled_algorithms` 这个 5.0 才有的参数），跨大版本要重验一遍。
+paramiko>=5.0,<6
+pyte>=0.8
+cryptography>=42
+ruff>=0.16.10

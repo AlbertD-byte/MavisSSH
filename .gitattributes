@@ -1,0 +1,17 @@
+# Normalise line endings: keep LF in the repository, check out CRLF on
+# Windows. Without this, every commit on this machine rewrites the whole file
+# as CRLF and diffs become unreadable.
+* text=auto eol=crlf
+
+*.py    text diff=python
+*.md    text
+*.bat   text eol=crlf
+*.txt   text
+*.json  text
+
+# Runtime dependencies shipped as binaries.
+*.exe   binary
+*.dll   binary
+*.ttf   binary
+*.png   binary
+*.zip   binary

@@ -1,0 +1,5 @@
+# 打包专用依赖。**构建机上装这份，运行时不需要 PyInstaller。**
+-r requirements.txt
+
+# PyInstaller 6.x：6.0 起对 PyQt6 的 hook 更完整（自动收 Qt 插件目录）
+pyinstaller>=6.6

@@ -1,0 +1,152 @@
+.venv/
+# PyQt6 -> PySide6 迁移评估用的旁路 venv。**不进版本库**：里面的包只为跑
+# tests/_probe_pyside_*.py 两个迁移探针，与主 .venv 的依赖集不同。
+.venv-pyside/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.idea/
+.vscode/
+build/
+dist/
+*.egg-info/
+Thumbs.db
+.DS_Store
+
+# Third-party binaries are committed (rz/sz/msys runtime deps) but the
+# superseded copies parked in bin/_unused/ are not.
+bin/_unused/
+
+# Generated visual regression output from _shots.py / _shots2.py /
+# _tabvisual.py / _mwwshot.py.
+_ansi_swatch.png
+_dlg_*.png
+_monitor_*.png
+_sftp_*.png
+_tab_*.png
+_ui_*.png
+_vis_*.png
+_mw_*.png
+_side.png
+_fold_*.png
+_rowfit.png
+_uifont_*.png
+_shot_*.png
+# `tests/_live.py`（真机联调）写的一族，同样落在仓库根目录。
+# 这一族之前漏了，于是每次真机跑完工作区就多一个 `?? _live_*.png`。
+_live_*.png
+_live_*.txt
+_neg.txt
+
+# 应用日志（sshclient/core/logs.py 写 <cwd>/logs/mavisssh.log）
+# 以及测试运行日志（_runall.py 写 <cwd>/logs/tests/_run_<名字>.out/.err）。
+# 一条 `logs/` 盖住两层，测试日志不再单独列。
+logs/
+.ruff_cache
+
+# 旧版 runner 曾经把每套的 stdout/stderr 写在仓库根。已经不这么写了，
+# 留着这两条只为兜住老副本 —— 根目录要是再冒出 `_run_*.out` 说明有人
+# 改回去了。
+_run_*.out
+_run_*.err
+
+# Screenshot / scratch output from the test helpers, which now live in tests/.
+tests/_ansi_swatch.png
+tests/_dlg_*.png
+tests/_monitor_*.png
+tests/_sftp_*.png
+tests/_tab_*.png
+tests/_ui_*.png
+tests/_vis_*.png
+tests/_mw_*.png
+tests/_side.png
+tests/_fold_*.png
+tests/_rowfit.png
+tests/_uifont_*.png
+tests/_shot_*.png
+tests/_live_*.png
+tests/_neg.txt
+tests/_probe_sample.txt
+# installer/_probe_*.py: 一次性验证脚本（探测 makensis、跑通打包链路）。
+# 与 tests/ 下那族 _probe_ 同理 —— 跑完即弃，不进版本库。
+installer/_probe_*.py
+# 走弯路时留下的：曾打算用外部 UTF-16 文案文件给 NSIS 传中文，
+# 实测 `Unicode true` 并不覆盖 LangString 的值，改用全 ASCII 脚本解决。
+# 文件本身已无用，留着只是提醒别再走这条路。
+installer/strings_zh.txt
+# PyQt6 -> PySide6 迁移探针（2026-10-13）。**一次性评估工具，不是回归判据**：
+# 只打印对比数据、不下 PASS/FAIL 结论。要跑就用
+#   .venv\Scripts\python.exe         tests\_probe_pyside_migration.py
+#   .venv-pyside\Scripts\python.exe  tests\_probe_pyside_migration.py
+# 两份输出 diff 着看。真要迁移，得另写带判据的迁移测试。
+# **三条一起忽略**：前两条按名字走，第三条是 `_probe_real_modules.py` ——
+# 名字里没有 pyside，所以单靠上面那条 glob 接不住，别以为已经盖住了。
+tests/_probe_pyside_*.py
+tests/_probe_real_modules.py
+# 一次性补丁脚本：用脚本改源码（手写 old_string 对不上带反斜杠的
+# docstring）。跑完即弃，不进版本库。
+tests/_patch_*.py
+# 批量跑判据的工具（一个脚本一个进程 + UTF-8 捕获）与它的输出。
+# **批处理必须分进程**：同进程里 exec 多个测试脚本，前一个留下的
+# QApplication/Widget 会污染下一个，跑到第 6 个左右就 0xC0000005 ——
+# 而每个脚本单独跑都是绿的。
+tests/_runall_utf8.py
+tests/_runtest_utf8.py
+tests/_runone_utf8.py
+tests/_runall_result.txt
+tests/_runone_result.txt
+tests/_fwin_result.txt
+# 真机联调脚本：需要一台真的 SSH 服务器，连接信息只从环境变量读。
+# 与 tests/_live.py 同理 —— **故意不接进离线回归的门禁**（网络抖一下
+# 就把门禁弄红）。要跑就单独跑。
+tests/_live_hostkey.py
+tests/_probe_clip.py
+# UI 设计稿工具：渲染 before/after 截图、按调色板契约校验候选配色、
+# 量化各底色之间的「分隔度」（分隔线被删掉后色差就是唯一的分隔）。
+# 一次性评估工具，不进版本库（设计稿的结论在 docs/UI_DESIGN_PROPOSAL.md）。
+tests/_design_*.py
+tests/_design_out/
+tests/_design_out_new/
+tests/_design_out_v2/
+tests/_design_out_v3/
+tests/_design_out_v4/
+tests/_design_out_v5/
+# 临时 commit 消息文件（commit 消息里有反斜杠时，用 -F 传更安全）
+tests/_commitmsg.txt
+# 安全探针：lrzsz 的 shell_join 对「~ 开头且含 shell 元字符」的处理。
+# 结论已写进 sshclient/core/lrzsz.py 的注释，探针是一次性评估工具。
+tests/_probe_shelljoin*.py
+tests/_shot_sessions.json
+tests/_shot_settings.json
+
+# Scratch state written by the screenshot helpers.
+_shot_sessions.json
+_shot_settings.json
+
+# 由 installer/make_icons.py 从 sshclient/ui/logo.py 导出的构建产物。
+# **不提交**：改了 Logo 重新生成一遍就行，存进版本库只会变成第二份真相。
+installer/icons/
+dist/
+
+# ---- 归档区（2026-10-13 从工作区根目录 D:\workspaces\MiniMax 收拢进来）----
+# 根目录散着一批历史会话产物（探针脚本、视觉回归截图、commit message 草稿），
+# 已按性质归位到下面几处。它们是**过程留档，不是源码**：
+#
+#   docs/commits/    历史 commit message 草稿（.gitcommit*.txt）
+#   docs/_shots/     视觉回归截图（106 个 PNG）
+#   docs/_design/    设计稿图片（配色候选、层次对照）
+#   tests/_scratch/  一次性探针脚本与日志（跑完即弃，已与真测试隔离）
+#
+# **全部不提交。** 探针脚本依赖当时的临时状态、几乎必然已失效，进版本库只会
+# 让后来的人误以为是可跑的测试；截图和草稿是本地留档。放这里是为了让工作区
+# 根目录干净，不是为了进 git —— 真要用，去翻 git log 或历史会话记录。
+#
+# **例外：`docs/img/` 是提交的。** 那里放的是 README 引用的**发布截图**
+# （`tools/make_release_shots.py` 生成），是仓库资产而不是过程留档 ——
+# README 里的图就是从那儿来的，缺了 README 就散架了。
+docs/commits/
+docs/_shots/
+docs/_design/
+tests/_scratch/

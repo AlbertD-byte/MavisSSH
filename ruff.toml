@@ -1,0 +1,52 @@
+# ruff 配置
+#
+# **这份文件是补 AGENTS.md 那条「本仓没有 linter 配置」的空缺**，不是新加一套风格。
+# 规则集是照着仓库里**已经在用**的东西反推出来的，不是照着 ruff 默认值：
+#
+#   - `BLE001` 必须留着 —— 全仓 43 处 `except Exception:  # noqa: BLE001` 是
+#     有意写的（盲抓在这里是刻意的：关窗、收尾、后台线程都要兜住），
+#     规则不启用的话那些 noqa 全是死标记。
+#   - `UP` 整族关掉 —— 714 个错误里 512 个是 `UP031`（把 `%` 改成 f-string），
+#     而这个项目的字符串拼接风格是 AGENTS.md 定的，不是一条待清理的债。
+#   - `S` / `SIM` / `PLW` / `TRY` / `DTZ` / `PIE` / `FLY` 关掉：测试脚本里
+#     大量 `except Exception: continue` 和 `subprocess.run` 是不带 check 的
+#     设计（测试自己判退出码），不是缺陷。
+#
+# 真正打开的是 `F`（pyflakes）——它抓的是 undefined-name 这类**真 bug**，
+# 这轮就靠它照出了两个（`palette.qcolor` 的注解、`tests/_e2e.py` 的 `FAKE`）。
+# 解释器是 3.14.5。**别写低** —— 写 py310 会让 ruff 把 3.12+ 的 f-string
+# 语法（嵌套引号、反斜杠转义）判成 invalid-syntax，实测 `tests/_savescale.py`
+# 一次报了 3 条假错。
+target-version = "py314"
+line-length = 88
+
+[lint]
+# 只开这三族，理由见文件头。
+#   F = pyflakes，抓 undefined-name / 未用 import 这类**真 bug**
+#   W = 真实警告（缺尾换行等）
+#   I = import 排序
+# **`E`（pycodestyle）族刻意不开**：`E701/E702`（`if x: y` 与分号）在这个
+# 代码库是刻意的紧凑写法——`terminal_widget.py` 的绘制热路径上一行一句，
+# 拆开反而更难读，开了就是 153 条待压制噪声；`E741` 的 `l` 是 HSL 明度变量。
+select = ["F", "W", "I"]
+
+[lint.per-file-ignores]
+# 测试脚本：import 位置和未用变量是噪声（很多 import 本身就是要被测的对象）。
+"tests/*" = ["F401", "F841", "E402"]
+# `tab_close.py` 的 4 处 `palette: "Palette"` 是 AGENTS.md 记的**合法引号
+# 例外**：该文件从没 import 过 `Palette`，靠 `from __future__ import
+# annotations` 让注解不求值。引号在这里是**必要的**，删掉就成了悬空名。
+"sshclient/ui/tab_close.py" = ["F821"]
+# `tests/_tunpersist.py:79` 的 `panel` —— **误报，且 HEAD 上就有**（用
+# `git show HEAD:tests/_tunpersist.py` 单独跑过一遍确认）。`panel` 在 76 行
+# 模块级定义、78 行的 lambda 引用它，运行期完全合法（该套实测绿）；
+# ruff 对「lambda 体是元组」这种写法判成了 undefined。
+"tests/_tunpersist.py" = ["F821"]
+# __init__.py 只做再导出。
+"**/__init__.py" = ["F401"]
+
+[lint.isort]
+known-first-party = ["sshclient", "tests"]
+
+[format]
+quote-style = "double"

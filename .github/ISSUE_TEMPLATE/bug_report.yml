@@ -1,0 +1,97 @@
+name: Bug 报告
+description: 报告一个可复现的问题
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你花时间报告问题。
+
+        **请先确认**：这个项目有大量**基于像素与字体度量**的判据，
+        如果你的问题只在某个字号 / 主题 / 缩放比例下出现，请在下面说明。
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 发生了什么
+      description: 实际观察到的行为
+      placeholder: |
+        例如：点「新建连接」后窗口不弹出，但日志里有一行 …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 你期望什么
+      placeholder: 例如：弹出新建连接对话框
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: 复现步骤
+      description: 从打开应用开始，一步一步
+      placeholder: |
+        1. 启动 MavisSSH
+        2. 点左侧「+ 新建连接」
+        3. 看到 …
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 版本
+      placeholder: 0.2.0（或界面上显示的版本号）
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: 操作系统
+      placeholder: Windows 11 / macOS 14 / Ubuntu 24.04
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python 与 PyQt6 版本
+      description: 在应用里或终端跑 `python -c "import sys, PyQt6.QtCore as c; print(sys.version, c.PYQT_VERSION_STR)"`
+      placeholder: 3.12.3 / 6.7.0
+    validations:
+      required: true
+
+  - type: input
+    id: ui
+    attributes:
+      label: 相关设置
+      description: 主题、界面字号、终端字号等
+      placeholder: 深色主题 / 界面字号 14pt
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志片段
+      description: |
+        应用日志在**当前工作目录**下的 `logs/mavisssh.log`。
+
+        **请先脱敏**：日志已经对口令做了脱敏，但主机名、用户名、路径
+        仍可能包含你的环境信息 —— 贴之前确认一下。
+      placeholder: |
+        [ERROR] …
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前请确认
+      options:
+        - label: 我已搜索过现有 Issue，没有重复
+          required: true
+        - label: 我已脱敏日志与截图中的敏感信息
+          required: false

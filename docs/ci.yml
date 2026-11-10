@@ -1,0 +1,86 @@
+# 本文件是 GitHub Actions 的 CI 配置**模板**。
+#
+# ## 为什么它不在 `.github/workflows/` 下
+#
+# 首发（v0.2.0）时用于上传代码的 API 令牌缺少 GitHub 的 **Workflows** 权限，
+# GitHub 因此拒绝推送任何 `.github/workflows/` 下的文件（API 侧同样是 403）。
+# 令牌权限属于账号设置，不能由代码绕过 —— 所以配置改为随仓库发布在这里，
+# 由维护者手动启用。
+#
+# ## 怎么启用
+#
+# 在仓库根目录执行：
+#
+# ```console
+# mkdir -p .github/workflows
+# copy docs\ci.yml .github\workflows\ci.yml        # Windows
+# cp docs/ci.yml .github/workflows/ci.yml            # macOS / Linux
+# git add .github/workflows/ci.yml
+# git commit -m "ci: 启用 GitHub Actions 门禁"
+# git push
+# ```
+#
+# 启用后，push 到 `main` 或向 `main` 提 PR 会自动在 Windows runner 上跑
+# 全量判据（`_runall.py`）与 `ruff` 检查，失败时上传 `logs/` 作为构件。
+#
+# 判据里的字体度量断言要求真实的 `windows` 平台插件，**不要**改成
+# `offscreen` —— 那个插件不加载系统字体，会让一批断言变成恒真。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# 同一分支的新 push 取消上一个还没跑完的 —— 连续推多次时省时间。
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    # **只在 Windows 上跑。** 这个项目的判据里有大量基于**字体度量**的
+    # 断言（终端列网格、控件高度、截图取色），在 Linux / macOS 上
+    # 字体族不同，数字对不上 —— 那不是产品坏了，是测量环境不同。
+    #
+    # 跨平台的支持情况由 `tests/_portable.py` 单独守着（它检查的是
+    # 「关键路径不再写死 Windows」，不需要真机）。
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      # **平台插件必须是 windows，不能是 offscreen。**
+      # `offscreen` 插件不加载系统字体目录，`QFontDatabase.families()`
+      # 返回 0 —— 于是所有截图断言变成恒真：它们看起来在跑，其实什么都没测。
+      # 这也是为什么判据必须在真实桌面的 `windows` 插件下跑。
+      - name: 跑全量判据
+        run: |
+          $env:QT_QPA_PLATFORM = 'windows'
+          $env:PYTHONIOENCODING = 'utf-8'
+          python _runall.py
+
+      - name: 检查 lint
+        run: |
+          python -m pip install ruff
+          ruff check .
+
+      - name: 上传失败日志
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: logs/
+          if-no-files-found: ignore
+          retention-days: 7
